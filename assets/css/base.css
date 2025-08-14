@@ -111,7 +111,7 @@ html {
 /* mobile: 2,5 */
 @media (min-width: 992px) {
     [data-carousel] .hf-track {
-        --visible: 3.5;
+        --visible: 1.5;
     }
 
     /* desktop: 3,5 */
