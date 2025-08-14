@@ -1,50 +1,272 @@
 <!doctype html>
 <html lang="pt" data-bs-theme="dark">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>She Filmes — contando histórias</title>
   <meta name="description" content="Produtora de audiovisual focada em casamentos, redes sociais e comerciais de TV." />
-  <link rel="icon" href="/assets/logo-shefilmes.png" />
+  <link rel="icon" href="/assets/img/logo-shefilmes.png" />
+
+  <!-- Bootstrap & Icons -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
-  <style>
-    .brand-wordmark { letter-spacing: .04em; }
-    .hero { min-height: 80vh; background: radial-gradient(1200px 600px at 10% 10%, rgba(255,255,255,.06), transparent),
-                               radial-gradient(800px 500px at 100% 0%, rgba(255,255,255,.04), transparent),
-                               url('/assets/texture-noise.png'); }
-    .video-card { position: relative; overflow: hidden; border-radius: 1rem; }
-    .video-thumb { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform .4s ease, filter .3s ease, opacity .3s ease; }
-    .video-card:hover .video-thumb { transform: scale(1.04); filter: grayscale(20%); opacity: .85; }
-    .play-btn { position: absolute; inset: 0; display: grid; place-items: center; }
-    .play-btn .btn { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; box-shadow: 0 10px 30px rgba(0,0,0,.45); }
-    .section-label { text-transform: uppercase; letter-spacing: .2em; font-size: .8rem; opacity: .7; }
 
-    /* Netflix-like carousel helpers */
-    [data-carousel] { --item-w: 220px; }
-    @media (min-width: 576px) { [data-carousel] { --item-w: 240px; } }
-    @media (min-width: 992px) { [data-carousel] { --item-w: 260px; } }
-    .hf-track { scroll-snap-type: x mandatory; gap: .75rem; }
-    .hf-track .hf-item { scroll-snap-align: start; }
-    .hf-track { scrollbar-width: thin; }
-    .hf-edge { position: absolute; top: 0; bottom: 0; width: 64px; z-index: 2; cursor: pointer; opacity: .95; transition: opacity .2s ease; }
-    .hf-edge:hover { opacity: 1; }
-    .hf-edge--left { left: 0; }
-    .hf-edge--right { right: 0; }
-    [data-bs-theme='dark'] .hf-edge--left  { background: linear-gradient(90deg, rgba(0,0,0,.85), rgba(0,0,0,0)); }
-    [data-bs-theme='dark'] .hf-edge--right { background: linear-gradient(270deg, rgba(0,0,0,.85), rgba(0,0,0,0)); }
-    [data-bs-theme='light'] .hf-edge--left  { background: linear-gradient(90deg, rgba(255,255,255,.95), rgba(255,255,255,0)); }
-    [data-bs-theme='light'] .hf-edge--right { background: linear-gradient(270deg, rgba(255,255,255,.95), rgba(255,255,255,0)); }
+  <style>
+    html {
+      scroll-behavior: smooth;
+    }
+
+    .brand-wordmark {
+      letter-spacing: .04em;
+    }
+
+    /* HERO with subtle Ken Burns + parallax feel */
+    .hero {
+      position: relative;
+      min-height: 80vh;
+      overflow: hidden;
+      isolation: isolate;
+      background: var(--bs-body-bg);
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background-image: url('/assets/img/hero_bg.jpg');
+      /* troque por sua imagem hero */
+      background-size: cover;
+      background-position: center;
+      transform: scale(1.05);
+      animation: kenburns 24s ease-in-out infinite alternate;
+      will-change: transform;
+      opacity: .25;
+      /* sutil sobre dark */
+      z-index: -1;
+    }
+
+    @keyframes kenburns {
+      0% {
+        transform: scale(1.05) translate3d(0, 0, 0);
+      }
+
+      100% {
+        transform: scale(1.12) translate3d(0, -1.5%, 0);
+      }
+    }
+
+    .video-card {
+      position: relative;
+      overflow: hidden;
+      border-radius: 1rem;
+    }
+
+    .video-thumb {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform .4s ease, filter .3s ease, opacity .3s ease;
+    }
+
+    .video-card:hover .video-thumb {
+      transform: scale(1.04);
+      filter: grayscale(20%);
+      opacity: .85;
+    }
+
+    .play-btn {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+    }
+
+    .play-btn .btn {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, .45);
+    }
+
+    .section-label {
+      text-transform: uppercase;
+      letter-spacing: .2em;
+      font-size: .8rem;
+      opacity: .7;
+    }
+
+    /* Netflix-like carousel: exactly 3 visible on mobile, 5 on desktop */
+    [data-carousel] {
+      --gap: .75rem;
+    }
+
+    [data-carousel] .hf-track {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: var(--gap);
+      overflow: auto;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    [data-carousel] .hf-item {
+      scroll-snap-align: start;
+      flex: 0 0 calc((100% - (var(--gap) * (var(--visible) - 1))) / var(--visible));
+    }
+
+    [data-carousel] .hf-track {
+      scrollbar-width: thin;
+    }
+
+    /* Firefox */
+    [data-carousel] .hf-track::-webkit-scrollbar {
+      height: 10px;
+    }
+
+    /* WebKit */
+    [data-carousel] .hf-track::-webkit-scrollbar-thumb {
+      border-radius: 10px;
+    }
+
+    /* visibility count: 3 on mobile, 5 on ≥992px (lg) */
+    [data-carousel] .hf-track {
+      --visible: 3;
+    }
+
+    @media (min-width: 992px) {
+      [data-carousel] .hf-track {
+        --visible: 5;
+      }
+    }
+
+    /* Edge gradient overlays (clickable zones) */
+    .hf-edge {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 68px;
+      z-index: 2;
+      cursor: pointer;
+      opacity: .95;
+      transition: opacity .2s ease;
+    }
+
+    .hf-edge:hover {
+      opacity: 1;
+    }
+
+    .hf-edge--left {
+      left: 0;
+    }
+
+    .hf-edge--right {
+      right: 0;
+    }
+
+    /* Dark/Light adaptive edges */
+    [data-bs-theme='dark'] .hf-edge--left {
+      background: linear-gradient(90deg, rgba(0, 0, 0, .85), rgba(0, 0, 0, 0));
+    }
+
+    [data-bs-theme='dark'] .hf-edge--right {
+      background: linear-gradient(270deg, rgba(0, 0, 0, .85), rgba(0, 0, 0, 0));
+    }
+
+    [data-bs-theme='light'] .hf-edge--left {
+      background: linear-gradient(90deg, rgba(255, 255, 255, .95), rgba(255, 255, 255, 0));
+    }
+
+    [data-bs-theme='light'] .hf-edge--right {
+      background: linear-gradient(270deg, rgba(255, 255, 255, .95), rgba(255, 255, 255, 0));
+    }
+
+    /* Chevron buttons (desktop); hidden on mobile, adapt to theme) */
+    .hf-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      z-index: 3;
+      border: 1px solid transparent;
+    }
+
+    .hf-arrow--left {
+      left: .75rem;
+    }
+
+    .hf-arrow--right {
+      right: .75rem;
+    }
+
+    @media (max-width: 575.98px) {
+      .hf-arrow {
+        display: none;
+      }
+    }
+
+    /* hide on xs */
+
+    /* Theme-aware arrow colors */
+    [data-bs-theme='dark'] .hf-arrow {
+      background: rgba(0, 0, 0, .45);
+      color: #fff;
+      border-color: rgba(255, 255, 255, .25);
+    }
+
+    [data-bs-theme='light'] .hf-arrow {
+      background: rgba(255, 255, 255, .80);
+      color: #000;
+      border-color: rgba(0, 0, 0, .15);
+    }
+
+    /* Cookie bar */
+    .cookiebar {
+      position: fixed;
+      left: 1rem;
+      right: 1rem;
+      bottom: 1rem;
+      z-index: 2000;
+      border-radius: .75rem;
+      padding: 1rem 1.25rem;
+      display: none;
+      /* shown by JS if not accepted */
+    }
+
+    [data-bs-theme='dark'] .cookiebar {
+      background: rgba(0, 0, 0, .85);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, .1);
+    }
+
+    [data-bs-theme='light'] .cookiebar {
+      background: rgba(255, 255, 255, .95);
+      color: #000;
+      border: 1px solid rgba(0, 0, 0, .1);
+    }
+
+    .cookiebar .btn {
+      white-space: nowrap;
+    }
   </style>
 </head>
+
 <body>
-  <nav class="navbar navbar-expand-lg border-bottom sticky-top" id="top">
+  <!-- NAVBAR with bg-body to match theme -->
+  <nav class="navbar navbar-expand-lg border-bottom sticky-top bg-body shadow-sm" id="top">
     <div class="container">
       <a class="navbar-brand d-flex align-items-center" href="#">
-        <img src="/assets/logo-shefilmes.png" alt="She Filmes" width="36" height="36" class="me-2 rounded-2" />
-        <strong class="brand-wordmark">She Filmes</strong>
+        <img src="/assets/img/logo-shefilmes.png" alt="She Filmes" width="36" height="36" class="me-2 rounded-2" />
+        <strong class="brand-wordmark">SheFilmes</strong>
       </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav"><span class="navbar-toggler-icon"></span></button>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav"><span
+          class="navbar-toggler-icon"></span></button>
       <div class="collapse navbar-collapse" id="nav">
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
           <li class="nav-item"><a class="nav-link" href="#portfolio" data-i18n="nav.portfolio">Portfólio</a></li>
@@ -53,12 +275,14 @@
           <li class="nav-item"><a class="nav-link" href="#contato" data-i18n="nav.contact">Contato</a></li>
         </ul>
         <div class="d-flex gap-2 ms-lg-3">
-          <button class="btn btn-outline-secondary" id="themeToggle" aria-label="Alternar tema"><i class="bi bi-moon-stars"></i></button>
+          <button class="btn btn-outline-secondary" id="themeToggle" aria-label="Alternar tema"><i
+              class="bi bi-moon-stars"></i></button>
           <div class="dropdown">
-            <button class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown"><i class="bi bi-translate"></i> <span id="langLabel">PT</span></button>
+            <button class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown"><i
+                class="bi bi-translate"></i> <span id="langLabel">PT</span></button>
             <ul class="dropdown-menu dropdown-menu-end">
-              <li><button class="dropdown-item" data-lang="pt">Português</button></li>
-              <li><button class="dropdown-item" data-lang="en">English</button></li>
+              <li><button class="dropdown-item" data-lang="pt">PT</button></li>
+              <li><button class="dropdown-item" data-lang="en">EN</button></li>
             </ul>
           </div>
         </div>
@@ -66,13 +290,16 @@
     </div>
   </nav>
 
+  <!-- HERO -->
   <header class="hero d-flex align-items-center">
+    <div class="hero-bg" aria-hidden="true"></div>
     <div class="container py-5">
       <div class="row align-items-center g-5">
         <div class="col-lg-6">
           <span class="section-label" data-i18n="hero.tag">Produtora de audiovisual</span>
           <h1 class="display-4 fw-bold mt-2" data-i18n="hero.title">She Filmes — contando histórias</h1>
-          <p class="lead opacity-75" data-i18n="hero.lead">Casamentos, redes sociais e comerciais de TV com um olhar feminino e cinematográfico.</p>
+          <p class="lead opacity-75" data-i18n="hero.lead">Casamentos, redes sociais e comerciais de TV com um olhar
+            feminino e cinematográfico.</p>
           <div class="d-flex gap-3 mt-3">
             <a href="#portfolio" class="btn btn-primary btn-lg" data-i18n="cta.viewPortfolio">Ver portfólio</a>
             <a href="#contato" class="btn btn-outline-light btn-lg" data-i18n="cta.contact">Fale com a gente</a>
@@ -80,19 +307,23 @@
         </div>
         <div class="col-lg-6">
           <div class="video-card ratio ratio-16x9">
-            <img class="video-thumb" src="/assets/hero-thumb.jpg" alt="Showreel She Filmes" loading="lazy" />
+            <img class="video-thumb" src="/assets/img/hero_thumb.png" alt="Showreel She Filmes 2025" loading="lazy" />
             <div class="play-btn">
-              <button class="btn btn-light" data-video-type="youtube" data-video-id="dQw4w9WgXcQ" data-bs-toggle="modal" data-bs-target="#videoModal" aria-label="Assistir showreel">
+              <button class="btn btn-light" data-video-type="youtube" data-video-id="npoFNsmk2RY" data-bs-toggle="modal"
+                data-bs-target="#videoModal" aria-label="Assistir showreel">
                 <i class="bi bi-play-fill fs-3"></i>
               </button>
             </div>
           </div>
-          <small class="opacity-75 d-block mt-2" data-i18n="hero.credit">Substitua pelo seu showreel real.</small>
+          <small class="opacity-75 d-block mt-2">
+            Shefilmes Showreel.
+          </small>
         </div>
       </div>
     </div>
   </header>
 
+  <!-- PORTFÓLIO -->
   <section id="portfolio" class="py-5">
     <div class="container">
       <div class="d-flex justify-content-between align-items-end flex-wrap gap-3 mb-4">
@@ -101,432 +332,171 @@
           <h2 class="h1" data-i18n="portfolio.title">Histórias em vídeo</h2>
         </div>
         <ul class="nav nav-pills" id="portfolioTabs" role="tablist">
-          <li class="nav-item"><button class="nav-link active" id="tab-weddings" data-bs-toggle="pill" data-bs-target="#pane-weddings" type="button" role="tab" aria-controls="pane-weddings" aria-selected="true" data-i18n="portfolio.weddings">Casamentos</button></li>
-          <li class="nav-item"><button class="nav-link" id="tab-social" data-bs-toggle="pill" data-bs-target="#pane-social" type="button" role="tab" aria-controls="pane-social" aria-selected="false" data-i18n="portfolio.social">Redes sociais</button></li>
-          <li class="nav-item"><button class="nav-link" id="tab-tv" data-bs-toggle="pill" data-bs-target="#pane-tv" type="button" role="tab" aria-controls="pane-tv" aria-selected="false" data-i18n="portfolio.tv">Comerciais de TV</button></li>
+          <li class="nav-item"><button class="nav-link active" id="tab-weddings" data-bs-toggle="pill"
+              data-bs-target="#pane-weddings" type="button" role="tab" aria-controls="pane-weddings"
+              aria-selected="true" data-i18n="portfolio.weddings">Casamentos</button></li>
+          <li class="nav-item"><button class="nav-link" id="tab-social" data-bs-toggle="pill"
+              data-bs-target="#pane-social" type="button" role="tab" aria-controls="pane-social" aria-selected="false"
+              data-i18n="portfolio.social">Redes sociais</button></li>
+          <li class="nav-item"><button class="nav-link" id="tab-tv" data-bs-toggle="pill" data-bs-target="#pane-tv"
+              type="button" role="tab" aria-controls="pane-tv" aria-selected="false" data-i18n="portfolio.tv">Comerciais
+              de TV</button></li>
         </ul>
       </div>
 
       <div class="tab-content">
         <!-- Weddings -->
-        <div class="tab-pane fade show active" id="pane-weddings" role="tabpanel" aria-labelledby="tab-weddings" tabindex="0">
+        <div class="tab-pane fade show active" id="pane-weddings" role="tabpanel" aria-labelledby="tab-weddings"
+          tabindex="0">
           <div class="position-relative" data-carousel="weddings" aria-label="Carrossel de casamentos">
             <div class="hf-edge hf-edge--left" aria-hidden="true"></div>
-            <div class="hf-track d-flex flex-nowrap overflow-auto px-5" tabindex="0">
+            <button class="hf-arrow hf-arrow--left" type="button" aria-label="Anterior"><i
+                class="bi bi-chevron-left"></i></button>
 
-      <div class="hf-item me-3" style="width:var(--item-w)">
-        <article class="video-card ratio ratio-16x9">
-          <img class="video-thumb" src="/assets/wedding-01.jpg" alt="Weddings 1" loading="lazy" />
-          <div class="play-btn">
-            <button class="btn btn-light" data-video-type="youtube" data-video-id="oHg5SJYRHA0"
-                    data-bs-toggle="modal" data-bs-target="#videoModal" aria-label="Play video">
-              <i class="bi bi-play-fill fs-3"></i>
-            </button>
-          </div>
-        </article>
-      </div>
-
-      <div class="hf-item me-3" style="width:var(--item-w)">
-        <article class="video-card ratio ratio-16x9">
-          <img class="video-thumb" src="/assets/wedding-02.jpg" alt="Weddings 2" loading="lazy" />
-          <div class="play-btn">
-            <button class="btn btn-light" data-video-type="youtube" data-video-id="kXYiU_JCYtU"
-                    data-bs-toggle="modal" data-bs-target="#videoModal" aria-label="Play video">
-              <i class="bi bi-play-fill fs-3"></i>
-            </button>
-          </div>
-        </article>
-      </div>
-
-      <div class="hf-item me-3" style="width:var(--item-w)">
-        <article class="video-card ratio ratio-16x9">
-          <img class="video-thumb" src="/assets/wedding-03.jpg" alt="Weddings 3" loading="lazy" />
-          <div class="play-btn">
-            <button class="btn btn-light" data-video-type="youtube" data-video-id="3JZ_D3ELwOQ"
-                    data-bs-toggle="modal" data-bs-target="#videoModal" aria-label="Play video">
-              <i class="bi bi-play-fill fs-3"></i>
-            </button>
-          </div>
-        </article>
-      </div>
-
-      <div class="hf-item me-3" style="width:var(--item-w)">
-        <article class="video-card ratio ratio-16x9">
-          <img class="video-thumb" src="/assets/wedding-04.jpg" alt="Weddings 4" loading="lazy" />
-          <div class="play-btn">
-            <button class="btn btn-light" data-video-type="youtube" data-video-id="fJ9rUzIMcZQ"
-                    data-bs-toggle="modal" data-bs-target="#videoModal" aria-label="Play video">
-              <i class="bi bi-play-fill fs-3"></i>
-            </button>
-          </div>
-        </article>
-      </div>
-
-      <div class="hf-item me-3" style="width:var(--item-w)">
-        <article class="video-card ratio ratio-16x9">
-          <img class="video-thumb" src="/assets/wedding-05.jpg" alt="Weddings 5" loading="lazy" />
-          <div class="play-btn">
-            <button class="btn btn-light" data-video-type="youtube" data-video-id="dQw4w9WgXcQ"
-                    data-bs-toggle="modal" data-bs-target="#videoModal" aria-label="Play video">
-              <i class="bi bi-play-fill fs-3"></i>
-            </button>
-          </div>
-        </article>
-      </div>
-
-      <div class="hf-item me-3" style="width:var(--item-w)">
-        <article class="video-card ratio ratio-16x9">
-          <img class="video-thumb" src="/assets/wedding-06.jpg" alt="Weddings 6" loading="lazy" />
-          <div class="play-btn">
-            <button class="btn btn-light" data-video-type="youtube" data-video-id="oHg5SJYRHA0"
-                    data-bs-toggle="modal" data-bs-target="#videoModal" aria-label="Play video">
-              <i class="bi bi-play-fill fs-3"></i>
-            </button>
-          </div>
-        </article>
-      </div>
-
-      <div class="hf-item me-3" style="width:var(--item-w)">
-        <article class="video-card ratio ratio-16x9">
-          <img class="video-thumb" src="/assets/wedding-07.jpg" alt="Weddings 7" loading="lazy" />
-          <div class="play-btn">
-            <button class="btn btn-light" data-video-type="youtube" data-video-id="kXYiU_JCYtU"
-                    data-bs-toggle="modal" data-bs-target="#videoModal" aria-label="Play video">
-              <i class="bi bi-play-fill fs-3"></i>
-            </button>
-          </div>
-        </article>
-      </div>
-
-      <div class="hf-item me-3" style="width:var(--item-w)">
-        <article class="video-card ratio ratio-16x9">
-          <img class="video-thumb" src="/assets/wedding-08.jpg" alt="Weddings 8" loading="lazy" />
-          <div class="play-btn">
-            <button class="btn btn-light" data-video-type="youtube" data-video-id="3JZ_D3ELwOQ"
-                    data-bs-toggle="modal" data-bs-target="#videoModal" aria-label="Play video">
-              <i class="bi bi-play-fill fs-3"></i>
-            </button>
-          </div>
-        </article>
-      </div>
-
-      <div class="hf-item me-3" style="width:var(--item-w)">
-        <article class="video-card ratio ratio-16x9">
-          <img class="video-thumb" src="/assets/wedding-09.jpg" alt="Weddings 9" loading="lazy" />
-          <div class="play-btn">
-            <button class="btn btn-light" data-video-type="youtube" data-video-id="fJ9rUzIMcZQ"
-                    data-bs-toggle="modal" data-bs-target="#videoModal" aria-label="Play video">
-              <i class="bi bi-play-fill fs-3"></i>
-            </button>
-          </div>
-        </article>
-      </div>
-
-      <div class="hf-item me-3" style="width:var(--item-w)">
-        <article class="video-card ratio ratio-16x9">
-          <img class="video-thumb" src="/assets/wedding-10.jpg" alt="Weddings 10" loading="lazy" />
-          <div class="play-btn">
-            <button class="btn btn-light" data-video-type="youtube" data-video-id="dQw4w9WgXcQ"
-                    data-bs-toggle="modal" data-bs-target="#videoModal" aria-label="Play video">
-              <i class="bi bi-play-fill fs-3"></i>
-            </button>
-          </div>
-        </article>
-      </div>
+            <div class="hf-track px-5" tabindex="0">
+              <!-- Exemplo de item; duplique até 10 -->
+              <div class="hf-item">
+                <article class="video-card ratio ratio-16x9">
+                  <img class="video-thumb" src="/assets/img/mini-weddings/wedding-01.png" alt="Casamento 1"
+                    loading="lazy">
+                  <div class="play-btn">
+                    <button class="btn btn-light" data-video-type="youtube" data-video-id="7s0ueHH9VdM"
+                      data-bs-toggle="modal" data-bs-target="#videoModal" aria-label="Assistir vídeo">
+                      <i class="bi bi-play-fill fs-3"></i>
+                    </button>
+                  </div>
+                </article>
+              </div>
+              <!-- ... itens 2..10 ... -->
             </div>
+
             <div class="hf-edge hf-edge--right" aria-hidden="true"></div>
+            <button class="hf-arrow hf-arrow--right" type="button" aria-label="Próximo"><i
+                class="bi bi-chevron-right"></i></button>
           </div>
+          <small class="opacity-75 d-block mt-2">Casamentos registrados com sensibilidade e atenção aos
+            detalhes.</small>
         </div>
 
-        <!-- Social -->
+        <!-- Social (Reels 9:16) -->
         <div class="tab-pane fade" id="pane-social" role="tabpanel" aria-labelledby="tab-social" tabindex="0">
           <div class="position-relative" data-carousel="reels" aria-label="Carrossel de reels do Instagram">
             <div class="hf-edge hf-edge--left" aria-hidden="true"></div>
-            <div class="hf-track d-flex flex-nowrap overflow-auto px-5" tabindex="0">
+            <button class="hf-arrow hf-arrow--left" type="button" aria-label="Anterior"><i
+                class="bi bi-chevron-left"></i></button>
 
-      <div class="hf-item me-3" style="width:var(--item-w)">
-        <article class="video-card" style="aspect-ratio: 9/16;">
-          <img class="video-thumb" src="/assets/reel-01.jpg" alt="Reel 1" loading="lazy" />
-          <div class="play-btn">
-            <button class="btn btn-light" data-video-type="instagram" data-instagram-url="https://www.instagram.com/p/8UPAGKK8XP/"
-                    data-bs-toggle="modal" data-bs-target="#videoModal" aria-label="Play reel">
-              <i class="bi bi-play-fill fs-3"></i>
-            </button>
-          </div>
-        </article>
-      </div>
-
-      <div class="hf-item me-3" style="width:var(--item-w)">
-        <article class="video-card" style="aspect-ratio: 9/16;">
-          <img class="video-thumb" src="/assets/reel-02.jpg" alt="Reel 2" loading="lazy" />
-          <div class="play-btn">
-            <button class="btn btn-light" data-video-type="instagram" data-instagram-url="https://www.instagram.com/p/KRYD8C648Y/"
-                    data-bs-toggle="modal" data-bs-target="#videoModal" aria-label="Play reel">
-              <i class="bi bi-play-fill fs-3"></i>
-            </button>
-          </div>
-        </article>
-      </div>
-
-      <div class="hf-item me-3" style="width:var(--item-w)">
-        <article class="video-card" style="aspect-ratio: 9/16;">
-          <img class="video-thumb" src="/assets/reel-03.jpg" alt="Reel 3" loading="lazy" />
-          <div class="play-btn">
-            <button class="btn btn-light" data-video-type="instagram" data-instagram-url="https://www.instagram.com/p/PDHF8K2R7M/"
-                    data-bs-toggle="modal" data-bs-target="#videoModal" aria-label="Play reel">
-              <i class="bi bi-play-fill fs-3"></i>
-            </button>
-          </div>
-        </article>
-      </div>
-
-      <div class="hf-item me-3" style="width:var(--item-w)">
-        <article class="video-card" style="aspect-ratio: 9/16;">
-          <img class="video-thumb" src="/assets/reel-04.jpg" alt="Reel 4" loading="lazy" />
-          <div class="play-btn">
-            <button class="btn btn-light" data-video-type="instagram" data-instagram-url="https://www.instagram.com/p/L4MA22DSHZ/"
-                    data-bs-toggle="modal" data-bs-target="#videoModal" aria-label="Play reel">
-              <i class="bi bi-play-fill fs-3"></i>
-            </button>
-          </div>
-        </article>
-      </div>
-
-      <div class="hf-item me-3" style="width:var(--item-w)">
-        <article class="video-card" style="aspect-ratio: 9/16;">
-          <img class="video-thumb" src="/assets/reel-05.jpg" alt="Reel 5" loading="lazy" />
-          <div class="play-btn">
-            <button class="btn btn-light" data-video-type="instagram" data-instagram-url="https://www.instagram.com/p/FATLTQR25Z/"
-                    data-bs-toggle="modal" data-bs-target="#videoModal" aria-label="Play reel">
-              <i class="bi bi-play-fill fs-3"></i>
-            </button>
-          </div>
-        </article>
-      </div>
-
-      <div class="hf-item me-3" style="width:var(--item-w)">
-        <article class="video-card" style="aspect-ratio: 9/16;">
-          <img class="video-thumb" src="/assets/reel-06.jpg" alt="Reel 6" loading="lazy" />
-          <div class="play-btn">
-            <button class="btn btn-light" data-video-type="instagram" data-instagram-url="https://www.instagram.com/p/6WVN7JR3HT/"
-                    data-bs-toggle="modal" data-bs-target="#videoModal" aria-label="Play reel">
-              <i class="bi bi-play-fill fs-3"></i>
-            </button>
-          </div>
-        </article>
-      </div>
-
-      <div class="hf-item me-3" style="width:var(--item-w)">
-        <article class="video-card" style="aspect-ratio: 9/16;">
-          <img class="video-thumb" src="/assets/reel-07.jpg" alt="Reel 7" loading="lazy" />
-          <div class="play-btn">
-            <button class="btn btn-light" data-video-type="instagram" data-instagram-url="https://www.instagram.com/p/UL7EA7557F/"
-                    data-bs-toggle="modal" data-bs-target="#videoModal" aria-label="Play reel">
-              <i class="bi bi-play-fill fs-3"></i>
-            </button>
-          </div>
-        </article>
-      </div>
-
-      <div class="hf-item me-3" style="width:var(--item-w)">
-        <article class="video-card" style="aspect-ratio: 9/16;">
-          <img class="video-thumb" src="/assets/reel-08.jpg" alt="Reel 8" loading="lazy" />
-          <div class="play-btn">
-            <button class="btn btn-light" data-video-type="instagram" data-instagram-url="https://www.instagram.com/p/3CEAVNWNZL/"
-                    data-bs-toggle="modal" data-bs-target="#videoModal" aria-label="Play reel">
-              <i class="bi bi-play-fill fs-3"></i>
-            </button>
-          </div>
-        </article>
-      </div>
-
-      <div class="hf-item me-3" style="width:var(--item-w)">
-        <article class="video-card" style="aspect-ratio: 9/16;">
-          <img class="video-thumb" src="/assets/reel-09.jpg" alt="Reel 9" loading="lazy" />
-          <div class="play-btn">
-            <button class="btn btn-light" data-video-type="instagram" data-instagram-url="https://www.instagram.com/p/67H328MRAD/"
-                    data-bs-toggle="modal" data-bs-target="#videoModal" aria-label="Play reel">
-              <i class="bi bi-play-fill fs-3"></i>
-            </button>
-          </div>
-        </article>
-      </div>
-
-      <div class="hf-item me-3" style="width:var(--item-w)">
-        <article class="video-card" style="aspect-ratio: 9/16;">
-          <img class="video-thumb" src="/assets/reel-10.jpg" alt="Reel 10" loading="lazy" />
-          <div class="play-btn">
-            <button class="btn btn-light" data-video-type="instagram" data-instagram-url="https://www.instagram.com/p/XTBCQB3HQY/"
-                    data-bs-toggle="modal" data-bs-target="#videoModal" aria-label="Play reel">
-              <i class="bi bi-play-fill fs-3"></i>
-            </button>
-          </div>
-        </article>
-      </div>
+            <div class="hf-track px-5" tabindex="0">
+              <div class="hf-item">
+                <article class="video-card" style="aspect-ratio:9/16;">
+                  <img class="video-thumb" src="/assets/img/mini-reels/reels_sambando.png" alt="Reel 1" loading="lazy">
+                  <div class="play-btn">
+                    <button class="btn btn-light" data-video-type="instagram"
+                      data-instagram-url="https://www.instagram.com/sambandocomiuli/reel/C43i_2bSlmF/"
+                      data-bs-toggle="modal" data-bs-target="#videoModal" aria-label="Assistir reel">
+                      <i class="bi bi-play-fill fs-3"></i>
+                    </button>
+                  </div>
+                </article>
+              </div>
+              <div class="hf-item">
+                <article class="video-card" style="aspect-ratio:9/16;">
+                  <img class="video-thumb" src="/assets/img/mini-reels/reels_nivea.png" alt="Reel 2" loading="lazy">
+                  <div class="play-btn">
+                    <button class="btn btn-light" data-video-type="instagram"
+                      data-instagram-url="https://www.instagram.com/shefilmes/reel/DNIwYVRAEy1/" data-bs-toggle="modal"
+                      data-bs-target="#videoModal" aria-label="Assistir reel">
+                      <i class="bi bi-play-fill fs-3"></i>
+                    </button>
+                  </div>
+                </article>
+              </div>
+              <!-- ... itens 3..10 ... -->
             </div>
+
             <div class="hf-edge hf-edge--right" aria-hidden="true"></div>
+            <button class="hf-arrow hf-arrow--right" type="button" aria-label="Próximo"><i
+                class="bi bi-chevron-right"></i></button>
           </div>
-          <small class="opacity-75 d-block mt-2" data-i18n="portfolio.igNote">Para Reels, cole a URL pública do post do Instagram no atributo <code>data-instagram-url</code>.</small>
+          <small class="opacity-75 d-block mt-2">Reels publicitárias e materiais para redes sociais.</small>
         </div>
 
         <!-- TV -->
         <div class="tab-pane fade" id="pane-tv" role="tabpanel" aria-labelledby="tab-tv" tabindex="0">
           <div class="position-relative" data-carousel="tv" aria-label="Carrossel de comerciais de TV">
             <div class="hf-edge hf-edge--left" aria-hidden="true"></div>
-            <div class="hf-track d-flex flex-nowrap overflow-auto px-5" tabindex="0">
+            <button class="hf-arrow hf-arrow--left" type="button" aria-label="Anterior"><i
+                class="bi bi-chevron-left"></i></button>
 
-      <div class="hf-item me-3" style="width:var(--item-w)">
-        <article class="video-card ratio ratio-16x9">
-          <img class="video-thumb" src="/assets/tv-01.jpg" alt="Tv 1" loading="lazy" />
-          <div class="play-btn">
-            <button class="btn btn-light" data-video-type="youtube" data-video-id="oHg5SJYRHA0"
-                    data-bs-toggle="modal" data-bs-target="#videoModal" aria-label="Play video">
-              <i class="bi bi-play-fill fs-3"></i>
-            </button>
-          </div>
-        </article>
-      </div>
-
-      <div class="hf-item me-3" style="width:var(--item-w)">
-        <article class="video-card ratio ratio-16x9">
-          <img class="video-thumb" src="/assets/tv-02.jpg" alt="Tv 2" loading="lazy" />
-          <div class="play-btn">
-            <button class="btn btn-light" data-video-type="youtube" data-video-id="kXYiU_JCYtU"
-                    data-bs-toggle="modal" data-bs-target="#videoModal" aria-label="Play video">
-              <i class="bi bi-play-fill fs-3"></i>
-            </button>
-          </div>
-        </article>
-      </div>
-
-      <div class="hf-item me-3" style="width:var(--item-w)">
-        <article class="video-card ratio ratio-16x9">
-          <img class="video-thumb" src="/assets/tv-03.jpg" alt="Tv 3" loading="lazy" />
-          <div class="play-btn">
-            <button class="btn btn-light" data-video-type="youtube" data-video-id="3JZ_D3ELwOQ"
-                    data-bs-toggle="modal" data-bs-target="#videoModal" aria-label="Play video">
-              <i class="bi bi-play-fill fs-3"></i>
-            </button>
-          </div>
-        </article>
-      </div>
-
-      <div class="hf-item me-3" style="width:var(--item-w)">
-        <article class="video-card ratio ratio-16x9">
-          <img class="video-thumb" src="/assets/tv-04.jpg" alt="Tv 4" loading="lazy" />
-          <div class="play-btn">
-            <button class="btn btn-light" data-video-type="youtube" data-video-id="fJ9rUzIMcZQ"
-                    data-bs-toggle="modal" data-bs-target="#videoModal" aria-label="Play video">
-              <i class="bi bi-play-fill fs-3"></i>
-            </button>
-          </div>
-        </article>
-      </div>
-
-      <div class="hf-item me-3" style="width:var(--item-w)">
-        <article class="video-card ratio ratio-16x9">
-          <img class="video-thumb" src="/assets/tv-05.jpg" alt="Tv 5" loading="lazy" />
-          <div class="play-btn">
-            <button class="btn btn-light" data-video-type="youtube" data-video-id="dQw4w9WgXcQ"
-                    data-bs-toggle="modal" data-bs-target="#videoModal" aria-label="Play video">
-              <i class="bi bi-play-fill fs-3"></i>
-            </button>
-          </div>
-        </article>
-      </div>
-
-      <div class="hf-item me-3" style="width:var(--item-w)">
-        <article class="video-card ratio ratio-16x9">
-          <img class="video-thumb" src="/assets/tv-06.jpg" alt="Tv 6" loading="lazy" />
-          <div class="play-btn">
-            <button class="btn btn-light" data-video-type="youtube" data-video-id="oHg5SJYRHA0"
-                    data-bs-toggle="modal" data-bs-target="#videoModal" aria-label="Play video">
-              <i class="bi bi-play-fill fs-3"></i>
-            </button>
-          </div>
-        </article>
-      </div>
-
-      <div class="hf-item me-3" style="width:var(--item-w)">
-        <article class="video-card ratio ratio-16x9">
-          <img class="video-thumb" src="/assets/tv-07.jpg" alt="Tv 7" loading="lazy" />
-          <div class="play-btn">
-            <button class="btn btn-light" data-video-type="youtube" data-video-id="kXYiU_JCYtU"
-                    data-bs-toggle="modal" data-bs-target="#videoModal" aria-label="Play video">
-              <i class="bi bi-play-fill fs-3"></i>
-            </button>
-          </div>
-        </article>
-      </div>
-
-      <div class="hf-item me-3" style="width:var(--item-w)">
-        <article class="video-card ratio ratio-16x9">
-          <img class="video-thumb" src="/assets/tv-08.jpg" alt="Tv 8" loading="lazy" />
-          <div class="play-btn">
-            <button class="btn btn-light" data-video-type="youtube" data-video-id="3JZ_D3ELwOQ"
-                    data-bs-toggle="modal" data-bs-target="#videoModal" aria-label="Play video">
-              <i class="bi bi-play-fill fs-3"></i>
-            </button>
-          </div>
-        </article>
-      </div>
-
-      <div class="hf-item me-3" style="width:var(--item-w)">
-        <article class="video-card ratio ratio-16x9">
-          <img class="video-thumb" src="/assets/tv-09.jpg" alt="Tv 9" loading="lazy" />
-          <div class="play-btn">
-            <button class="btn btn-light" data-video-type="youtube" data-video-id="fJ9rUzIMcZQ"
-                    data-bs-toggle="modal" data-bs-target="#videoModal" aria-label="Play video">
-              <i class="bi bi-play-fill fs-3"></i>
-            </button>
-          </div>
-        </article>
-      </div>
-
-      <div class="hf-item me-3" style="width:var(--item-w)">
-        <article class="video-card ratio ratio-16x9">
-          <img class="video-thumb" src="/assets/tv-10.jpg" alt="Tv 10" loading="lazy" />
-          <div class="play-btn">
-            <button class="btn btn-light" data-video-type="youtube" data-video-id="dQw4w9WgXcQ"
-                    data-bs-toggle="modal" data-bs-target="#videoModal" aria-label="Play video">
-              <i class="bi bi-play-fill fs-3"></i>
-            </button>
-          </div>
-        </article>
-      </div>
+            <div class="hf-track px-5" tabindex="0">
+              <div class="hf-item">
+                <article class="video-card ratio ratio-16x9">
+                  <img class="video-thumb" src="/assets/img/mini-tv/tv-01.png" alt="Comercial 1" loading="lazy">
+                  <div class="play-btn">
+                    <button class="btn btn-light" data-video-type="youtube" data-video-id="eZ10c6XcWSQ"
+                      data-bs-toggle="modal" data-bs-target="#videoModal" aria-label="Assistir comercial">
+                      <i class="bi bi-play-fill fs-3"></i>
+                    </button>
+                  </div>
+                </article>
+              </div>
+              <!-- ... itens 2..10 ... -->
             </div>
+
             <div class="hf-edge hf-edge--right" aria-hidden="true"></div>
+            <button class="hf-arrow hf-arrow--right" type="button" aria-label="Próximo"><i
+                class="bi bi-chevron-right"></i></button>
+          </div>
+          <small class="opacity-75 d-block mt-2">Campanhas publicitárias para TV aberta e fechada.</small>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVIÇOS -->
+  <section id="servicos" class="py-5 border-top">
+    <div class="container">
+      <div class="text-center mb-5">
+        <span class="section-label" data-i18n="services.tag">Serviços</span>
+        <h2 class="h1" data-i18n="services.title">Do roteiro ao corte final</h2>
+        <p class="lead opacity-75" data-i18n="services.lead">Atendimento completo para capturar e editar histórias com
+          qualidade cinematográfica.</p>
+      </div>
+      <div class="row g-4">
+        <div class="col-md-4">
+          <div class="p-4 border rounded-4 h-100"><i class="bi bi-heart-fill fs-2"></i>
+            <h3 class="h5 mt-3" data-i18n="services.weddings.title">Casamentos</h3>
+            <p class="opacity-75" data-i18n="services.weddings.desc">Registros emocionantes do seu grande dia.</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="p-4 border rounded-4 h-100"><i class="bi bi-phone-vibrate fs-2"></i>
+            <h3 class="h5 mt-3" data-i18n="services.social.title">Redes sociais</h3>
+            <p class="opacity-75" data-i18n="services.social.desc">Conteúdo vertical e clipes curtos para engajar.</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="p-4 border rounded-4 h-100"><i class="bi bi-broadcast-pin fs-2"></i>
+            <h3 class="h5 mt-3" data-i18n="services.tv.title">Comerciais de TV</h3>
+            <p class="opacity-75" data-i18n="services.tv.desc">Peças publicitárias com qualidade de broadcast.</p>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <section id="servicos" class="py-5 border-top">
-    <div class="container">
-      <div class="text-center mb-5">
-        <span class="section-label" data-i18n="services.tag">Serviços</span>
-        <h2 class="h1" data-i18n="services.title">Do roteiro ao corte final</h2>
-        <p class="lead opacity-75" data-i18n="services.lead">Atendimento completo para capturar e editar histórias com qualidade cinematográfica.</p>
-      </div>
-      <div class="row g-4">
-        <div class="col-md-4"><div class="p-4 border rounded-4 h-100"><i class="bi bi-heart-fill fs-2"></i><h3 class="h5 mt-3" data-i18n="services.weddings.title">Casamentos</h3><p class="opacity-75" data-i18n="services.weddings.desc">Registros emocionantes do seu grande dia.</p></div></div>
-        <div class="col-md-4"><div class="p-4 border rounded-4 h-100"><i class="bi bi-phone-vibrate fs-2"></i><h3 class="h5 mt-3" data-i18n="services.social.title">Redes sociais</h3><p class="opacity-75" data-i18n="services.social.desc">Conteúdo vertical e clipes curtos para engajar.</p></div></div>
-        <div class="col-md-4"><div class="p-4 border rounded-4 h-100"><i class="bi bi-broadcast-pin fs-2"></i><h3 class="h5 mt-3" data-i18n="services.tv.title">Comerciais de TV</h3><p class="opacity-75" data-i18n="services.tv.desc">Peças publicitárias com qualidade de broadcast.</p></div></div>
-      </div>
-    </div>
-  </section>
-
+  <!-- SOBRE -->
   <section id="sobre" class="py-5">
     <div class="container">
       <div class="row g-5 align-items-center">
-        <div class="col-lg-6"><img src="/assets/about.jpg" alt="Equipe She Filmes" class="img-fluid rounded-4" loading="lazy" /></div>
+        <div class="col-lg-6"><img src="/assets/img/about.png" alt="Equipe She Filmes" class="img-fluid rounded-4"
+            loading="lazy" /></div>
         <div class="col-lg-6">
           <span class="section-label" data-i18n="about.tag">Sobre</span>
           <h2 class="h1" data-i18n="about.title">Mais mulheres no audiovisual</h2>
           <p class="opacity-75" data-i18n="about.body">A She Filmes promove protagonismo feminino do set à pós.</p>
           <div class="d-flex gap-3 mt-3">
-            <a href="https://www.instagram.com/shefilmes" class="btn btn-outline-light" target="_blank" rel="noopener" aria-label="Instagram">
+            <a href="https://www.instagram.com/shefilmes" class="btn btn-outline-light" target="_blank" rel="noopener"
+              aria-label="Instagram">
               <i class="bi bi-instagram"></i> Instagram
             </a>
             <a href="#contato" class="btn btn-primary" data-i18n="cta.contact">Fale com a gente</a>
@@ -536,6 +506,7 @@
     </div>
   </section>
 
+  <!-- CONTATO -->
   <section id="contato" class="py-5 border-top">
     <div class="container">
       <div class="row g-5">
@@ -543,39 +514,77 @@
           <h2 class="h1" data-i18n="contact.title">Vamos contar a sua história?</h2>
           <p class="opacity-75" data-i18n="contact.lead">Envie uma mensagem e retornaremos em até 1 dia útil.</p>
           <ul class="list-unstyled mt-4">
-            <li class="mb-2"><i class="bi bi-envelope"></i> <a href="mailto:contato@shefilmes.com">contato@shefilmes.com</a></li>
-            <li class="mb-2"><i class="bi bi-telephone"></i> <a href="tel:+550000000000">+55 (00) 00000-0000</a></li>
+            <li class="mb-2">
+              <i class="bi bi-instagram"></i>
+              <a href="https://www.instagram.com/shefilmes" target="_blank" rel="noopener">
+                @shefilmes
+              </a>
+            </li>
+            <li class="mb-2">
+              <i class="bi bi-whatsapp"></i>
+              <a href="https://wa.me/5571982133646?text=Ol%C3%A1%2C%20vim%20pelo%20site%20da%20She%20Filmes"
+                target="_blank" rel="noopener">
+                WhatsApp
+              </a>
+            </li>
             <li class="mb-2"><i class="bi bi-geo-alt"></i> Brasil</li>
           </ul>
         </div>
         <div class="col-lg-6">
           <form class="row g-3" method="post" action="/contact.php">
-            <div class="col-md-6"><label class="form-label" for="name" data-i18n="contact.form.name">Nome</label><input id="name" name="name" class="form-control" required /></div>
-            <div class="col-md-6"><label class="form-label" for="email" data-i18n="contact.form.email">E-mail</label><input id="email" name="email" type="email" class="form-control" required /></div>
-            <div class="col-12"><label class="form-label" for="message" data-i18n="contact.form.message">Mensagem</label><textarea id="message" name="message" rows="5" class="form-control" required></textarea></div>
-            <div class="col-12"><button class="btn btn-primary" type="submit" data-i18n="contact.form.send">Enviar</button></div>
+            <div class="col-md-6"><label class="form-label" for="name" data-i18n="contact.form.name">Nome</label><input
+                id="name" name="name" class="form-control" required /></div>
+            <div class="col-md-6"><label class="form-label" for="email"
+                data-i18n="contact.form.email">E-mail</label><input id="email" name="email" type="email"
+                class="form-control" required /></div>
+            <div class="col-12"><label class="form-label" for="message"
+                data-i18n="contact.form.message">Mensagem</label><textarea id="message" name="message" rows="5"
+                class="form-control" required></textarea></div>
+            <div class="col-12"><button class="btn btn-primary" type="submit"
+                data-i18n="contact.form.send">Enviar</button></div>
           </form>
-          <small class="d-block mt-2 opacity-75" data-i18n="contact.notice">Para GitHub Pages, use Formspree/Basin/Netlify Forms.</small>
+          <small class="d-block mt-2 opacity-75" data-i18n="contact.notice">Para GitHub Pages, use
+            Formspree/Basin/Netlify Forms.</small>
         </div>
       </div>
     </div>
   </section>
 
+  <!-- FOOTER -->
   <footer class="border-top py-4">
     <div class="container d-flex flex-column flex-lg-row align-items-center justify-content-between gap-3">
       <div><strong>She Filmes</strong> — <span data-i18n="footer.tag">contando histórias</span></div>
       <div class="d-flex align-items-center gap-3">
-        <a href="https://www.instagram.com/shefilmes" target="_blank" rel="noopener" aria-label="Instagram"><i class="bi bi-instagram fs-5"></i></a>
+        <a href="https://www.instagram.com/shefilmes" target="_blank" rel="noopener" aria-label="Instagram"><i
+            class="bi bi-instagram fs-5"></i></a>
         <a href="mailto:contato@shefilmes.com" aria-label="Email"><i class="bi bi-envelope fs-5"></i></a>
-        <a href="#top" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-up"></i></a>
+        <a href="#top" class="btn btn-sm btn-outline-secondary" aria-label="Voltar ao topo"><i
+            class="bi bi-arrow-up"></i></a>
       </div>
     </div>
   </footer>
 
+  <!-- Cookie bar -->
+  <div id="cookiebar" class="cookiebar">
+    <div class="d-flex flex-column flex-lg-row align-items-start align-items-lg-center gap-3">
+      <span>
+        A She Filmes usa cookies para armazenar informações sobre como você utiliza o site e as páginas visitadas,
+        para melhorar sua experiência. Consulte nossa
+        <a target="_blank" href="/politica-privacidade.pdf">Política de Privacidade</a>.
+        Ao clicar em <b>Aceitar</b>, você consente com o uso de cookies e com a política de privacidade.
+      </span>
+      <div class="ms-lg-auto">
+        <button type="button" id="cookieAccept" class="btn btn-primary">Aceitar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
   <div class="modal fade" id="videoModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-xl">
       <div class="modal-content bg-transparent border-0">
-        <button type="button" class="btn-close btn-close-white ms-auto me-2 mt-2" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        <button type="button" class="btn-close btn-close-white ms-auto me-2 mt-2" data-bs-dismiss="modal"
+          aria-label="Fechar"></button>
         <div class="modal-body p-0">
           <div id="videoContainer" class="ratio ratio-16x9 rounded-4 overflow-hidden"></div>
         </div>
@@ -583,8 +592,10 @@
     </div>
   </div>
 
+  <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script async src="https://www.instagram.com/embed.js"></script>
-  <script src="/assets/scripts.js"></script>
+  <script src="/assets/js/scripts.js"></script>
 </body>
+
 </html>
