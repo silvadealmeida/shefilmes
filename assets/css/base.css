@@ -85,15 +85,15 @@ html {
 
 /* Netflix-like carousel: exactly 3 visible on mobile, 5 on desktop */
 [data-carousel] {
-    --gap: .75rem;
+    --gap: 1rem;
 }
 
 [data-carousel] .hf-track {
     display: grid;
     grid-auto-flow: column;
-    grid-auto-columns: calc((100% / 2.5) - 1rem);
-    /* mobile */
-    gap: 1rem;
+    grid-auto-columns: calc(100% / var(--visible));
+    /* "meia card" */
+    gap: var(--gap);
     overflow-x: auto;
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
@@ -101,33 +101,52 @@ html {
 
 [data-carousel] .hf-item {
     scroll-snap-align: start;
-    flex: 0 0 calc((100% - (var(--gap) * (var(--visible) - 1))) / var(--visible));
 }
 
+/* Visibilidade (contagem virtual de cards por viewport) */
 [data-carousel] .hf-track {
-    scrollbar-width: thin;
+    --visible: 2.5;
 }
 
-/* Firefox */
-[data-carousel] .hf-track::-webkit-scrollbar {
-    height: 10px;
-}
-
-/* WebKit */
-[data-carousel] .hf-track::-webkit-scrollbar-thumb {
-    border-radius: 10px;
-}
-
-/* visibility count: 3 on mobile, 5 on ≥992px (lg) */
-[data-carousel] .hf-track {
-    --visible: 3;
-}
-
+/* mobile: 2,5 */
 @media (min-width: 992px) {
     [data-carousel] .hf-track {
-        grid-auto-columns: calc((100% / 3.5) - 1rem);
-        /* desktop */
+        --visible: 3.5;
     }
+
+    /* desktop: 3,5 */
+}
+
+/* Legendas abaixo do thumb */
+.hf-card {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+}
+
+.video-caption h6 {
+    margin: 0;
+    font-size: .98rem;
+    line-height: 1.25;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.video-caption small {
+    opacity: .75;
+}
+
+/* Tag/“chip” opcional acima do título (ex.: Weddings, TV, Social) */
+.caption-tag {
+    display: inline-block;
+    font-size: .75rem;
+    padding: .15rem .5rem;
+    border-radius: 999px;
+    border: 1px solid var(--bs-border-color);
+    color: var(--bs-body-color);
+    opacity: .8;
 }
 
 /* Edge gradient overlays (clickable zones) */
