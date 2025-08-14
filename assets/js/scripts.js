@@ -111,9 +111,32 @@
 })();
 
 /* ---------- Video modal (YouTube + Instagram) ---------- */
+/* ---------- Video modal (YouTube + Instagram) [robusto com fallback] ---------- */
 (() => {
   const modal = document.getElementById('videoModal');
   const container = document.getElementById('videoContainer');
+
+  // Carrega o SDK do Instagram (se necessário) e chama cb quando pronto
+  const ensureInstagramSDK = (cb) => {
+    const ready = () => !!(window.instgrm && window.instgrm.Embeds && window.instgrm.Embeds.process);
+    if (ready()) { cb && cb(); return; }
+
+    // já existe carregando?
+    if (document.querySelector('script[data-instgrm-sdk]')) {
+      const t = setInterval(() => { if (ready()) { clearInterval(t); cb && cb(); } }, 120);
+      // se não ficar pronto em 2.5s, cb roda assim mesmo (para deixar o fallback entrar)
+      setTimeout(() => { clearInterval(t); cb && cb(); }, 2500);
+      return;
+    }
+
+    const s = document.createElement('script');
+    s.src = 'https://www.instagram.com/embed.js';
+    s.async = true;
+    s.defer = true;
+    s.setAttribute('data-instgrm-sdk','1');
+    s.onload = () => { cb && cb(); };
+    document.head.appendChild(s);
+  };
 
   const openYouTube = (id) => {
     const src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0`;
@@ -123,20 +146,69 @@
       allowfullscreen></iframe>`;
   };
 
+  // Constrói iframe embed direto do Instagram
+  const instagramIframeHTML = (url) => {
+    try {
+      const u = new URL(url);
+      // força barra final e rota /embed/
+      const parts = u.pathname.replace(/\/+$/,'').split('/');
+      // ex: ["", "shefilmes", "reel", "DNIwYVRAEy1"]
+      const shortcode = parts[parts.length - 1];
+      const embedSrc = `https://www.instagram.com/reel/${shortcode}/embed/`;
+      return `<iframe src="${embedSrc}" width="540" height="760" frameborder="0" scrolling="no" allowtransparency="true" allow="encrypted-media; picture-in-picture" style="max-width:100%; width:100%;"></iframe>`;
+    } catch {
+      // se a URL for inválida, usa o blockquote que ao menos abre nova aba no fallback
+      return '';
+    }
+  };
+
   const openInstagram = (url) => {
-    container.classList.remove('ratio', 'ratio-16x9');
-    container.innerHTML = `<div class="d-flex justify-content-center">
-      <blockquote class="instagram-media" data-instgrm-captioned data-instgrm-permalink="${url}" data-instgrm-version="14"
-        style="background:#000; border:0; margin:0; max-width:540px; width:100%;"></blockquote>
-    </div>`;
-    if (window.instgrm?.Embeds?.process) window.instgrm.Embeds.process();
+    // normaliza barra final
+    try {
+      const u = new URL(url);
+      if (!u.pathname.endsWith('/')) { u.pathname += '/'; url = u.toString(); }
+    } catch(_) {}
+
+    // Primeiro tenta via SDK (blockquote)
+    container.classList.remove('ratio','ratio-16x9');
+    container.innerHTML = `
+      <div class="d-flex justify-content-center p-3">
+        <blockquote class="instagram-media" data-instgrm-captioned data-instgrm-permalink="${url}"
+          data-instgrm-version="14" style="background:#000; border:0; margin:0; max-width:540px; width:100%;"></blockquote>
+      </div>`;
+
+    ensureInstagramSDK(() => {
+      // tenta processar
+      let processed = false;
+      try {
+        window.instgrm.Embeds.process();
+        processed = true;
+      } catch {}
+
+      // espera um pouco para ver se virou <iframe>
+      const start = Date.now();
+      const check = setInterval(() => {
+        const hasIframe = !!container.querySelector('iframe');
+        const tooLong = (Date.now() - start) > 2000;
+        if (hasIframe || tooLong) {
+          clearInterval(check);
+          if (!hasIframe) {
+            // Fallback: usa o iframe /embed/ direto
+            container.innerHTML = `
+              <div class="d-flex justify-content-center p-3">
+                ${instagramIframeHTML(url) || `<a class="btn btn-light" href="${url}" target="_blank" rel="noopener">Abrir no Instagram</a>`}
+              </div>`;
+          }
+        }
+      }, 120);
+    });
   };
 
   document.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-video-type]');
     if (!btn) return;
     const type = btn.getAttribute('data-video-type');
-    if (type === 'youtube') openYouTube(btn.getAttribute('data-video-id'));
+    if (type === 'youtube')   openYouTube(btn.getAttribute('data-video-id'));
     if (type === 'instagram') openInstagram(btn.getAttribute('data-instagram-url'));
   }, { passive: true });
 
@@ -145,6 +217,7 @@
     container.classList.add('ratio', 'ratio-16x9');
   });
 })();
+
 
 /* ---------- Netflix-like horizontal carousel (edges + arrows + swipe) ---------- */
 (() => {

@@ -7,11 +7,11 @@ html {
 }
 
 /* HERO with subtle Ken Burns + parallax feel */
+/* Hero background */
 .hero {
     position: relative;
     min-height: 80vh;
     overflow: hidden;
-    isolation: isolate;
     background: var(--bs-body-bg);
 }
 
@@ -19,14 +19,14 @@ html {
     position: absolute;
     inset: 0;
     background-image: url('assets/img/hero_bg.jpg');
-    /* troque por sua imagem hero */
+    /* <— esse arquivo */
     background-size: cover;
     background-position: center;
     transform: scale(1.05);
     animation: kenburns 24s ease-in-out infinite alternate;
     will-change: transform;
-    opacity: .25;
-    /* sutil sobre dark */
+    opacity: .28;
+    /* ajuste de intensidade */
     z-index: -1;
 }
 
@@ -39,7 +39,6 @@ html {
         transform: scale(1.12) translate3d(0, -1.5%, 0);
     }
 }
-
 .video-card {
     position: relative;
     overflow: hidden;
@@ -105,13 +104,13 @@ html {
 
 /* Visibilidade (contagem virtual de cards por viewport) */
 [data-carousel] .hf-track {
-    --visible: 2.5;
+    --visible: 1.5;
 }
 
 /* mobile: 2,5 */
 @media (min-width: 992px) {
     [data-carousel] .hf-track {
-        --visible: 1.5;
+        --visible: 3.5;
     }
 
     /* desktop: 3,5 */
